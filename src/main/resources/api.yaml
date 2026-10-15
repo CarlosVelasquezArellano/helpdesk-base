@@ -1,0 +1,143 @@
+openapi: "3.0.3"
+
+info:
+  title: API de Tickets - HelpDesk
+  version: 1.0.0
+  description: Contrato de la API de tickets de soporte. Es la fuente de verdad del microservicio.
+
+servers:
+  - url: http://localhost:8080
+    description: Entorno local
+
+tags:
+  - name: tickets
+    description: Operaciones sobre los tickets de soporte
+
+paths:
+  /api/tickets:
+
+    # ===== RESUELTO: usa esta operacion como ejemplo para las demas =====
+    get:
+      summary: Lista los tickets, con filtro opcional por estado
+      operationId: listarTickets
+      tags: [tickets]
+      # TODO 1: agrega el parametro de consulta "estado" (in: query, required: false)
+      #         con schematype string y enum [ABIERTO, EN_PROGRESO, CERRADO]   (RN-05)
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Estado del ticket
+          schema:
+            type: string
+            enum: [ABIERTO, EN_PROGRESO, CERRADO]
+      responses:
+        '200':
+          description: Lista de tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+    # TODO 2: agrega la operacion post con operationId crearTicket y tags [tickets]  (RN-03)
+    post:
+      summary: Crear un ticket
+      operationId: crearTicket
+      tags: [tickets]
+    # TODO 3: la operacion post debe tener requestBody required: true con el schema
+    #         TicketRequest en application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketRequest"
+    # TODO 4: declara las respuestas '201' (con el schema Ticket) y '400' (Datos invalidos)
+      responses:
+        '201':
+          description: TicketCreado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        '400':
+          description: Datos inválidos
+  # TODO 5: agrega la ruta /api/tickets/{id} con la operacion get,
+  #         operationId obtenerTicket y tags [tickets]
+  /api/tickets/{id}:
+    get:
+      summary: Obtiene un ticket por su ID
+      operationId: obtenerTicket
+      tags: [ tickets ]
+  # TODO 6: declara el parametro "id" (in: path, required: true) con
+  #         schema type integer y format int64
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador del ticket
+          schema:
+            type: integer
+            format: int64
+  # TODO 7: declara las respuestas '200' (con el schema Ticket) y '404' (El ticket no existe)
+      responses:
+        '200':
+          description: Ticket encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        '404':
+          description: El ticket no existe
+
+
+components:
+  schemas:
+    Ticket:
+      type: object
+      # TODO 8: marca como required los campos id, titulo, prioridad y estado
+      required:
+        - id
+        - titulo
+        - prioridad
+        - estado
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        titulo:
+          type: string
+          example: No carga el reporte mensual
+        # TODO 9: prioridad y estado son de tipo string con enum:
+        #         prioridad -> [ALTA, MEDIA, BAJA]   estado -> [ABIERTO, EN_PROGRESO, CERRADO]
+        prioridad:
+          type: string
+          enum: [ALTA, MEDIA, BAJA]
+          example: ALTA
+        estado:
+          type: string
+          enum: [ABIERTO, EN_PROGRESO, CERRADO]
+          example: ABIERTO
+        horasEstimadas:
+          type: integer
+          example: 4
+
+    # TODO 10: crea el schema TicketRequest con titulo (string, minLength 5, maxLength 100)
+    #          y prioridad (string, enum [ALTA, MEDIA, BAJA]); ambos required.   (RN-01 y RN-02)
+    TicketRequest:
+      type: object
+      required:
+        - titulo
+        - prioridad
+      properties:
+        titulo:
+          type: string
+          minLength: 5
+          maxLength: 100
+          example: No carga el reporte mensual
+        prioridad:
+          type: string
+          enum: [ ALTA, MEDIA, BAJA ]
+          example: ALTA
